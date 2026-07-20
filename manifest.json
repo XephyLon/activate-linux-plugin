@@ -1,0 +1,29 @@
+{
+  "id": "activate_linux",
+  "name": "Activate Linux",
+  "description": "Toggle an Activate-Linux watermark from settings. Wraps the external activate-linux binary.",
+  "version": "0.1.0",
+  "author": "XephyLon",
+  "sourceUrl": "https://github.com/XephyLon/activate-linux-plugin",
+  "apiVersion": 1,
+  "capabilities": ["settings"],
+  "permissions": ["process", "settings_read", "settings_write"],
+  "defaultWidth": 0,
+  "defaultHeight": 0,
+  "options": [
+    { "key": "enabled", "type": "boolean", "label": "Show watermark", "icon": "watermark", "default": false },
+    { "key": "title", "type": "text", "label": "Title", "icon": "title", "default": "Activate Linux" },
+    { "key": "message", "type": "text", "label": "Message", "icon": "notes", "default": "Go to Settings to activate Linux." },
+    { "key": "color", "type": "text", "label": "Color (r-g-b-a, 0.0-1.0)", "icon": "palette", "default": "0.35-0.35-0.35-1" },
+    { "key": "bold", "type": "boolean", "label": "Bold text", "icon": "format_bold", "default": false },
+    { "key": "scale", "type": "number", "label": "Scale", "icon": "aspect_ratio", "default": 1, "from": 0.5, "to": 4, "step": 0.1 }
+  ],
+  "desktopWidget": { "component": "ActivateLinuxHost.qml", "blur": false },
+  "package": {
+    "baseUrl": "https://raw.githubusercontent.com/XephyLon/activate-linux-plugin/main/",
+    "files": [
+      "ActivateLinuxHost.qml",
+      "assets/icon.svg"
+    ]
+  }
+}
