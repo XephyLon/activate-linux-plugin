@@ -11,7 +11,7 @@
   "defaultWidth": 0,
   "defaultHeight": 0,
   "options": [
-    { "key": "enabled", "type": "boolean", "label": "Show watermark", "icon": "watermark", "default": false },
+    { "key": "enabled", "type": "boolean", "label": "Show watermark", "icon": "branding_watermark", "default": false },
     { "key": "title", "type": "text", "label": "Title", "icon": "title", "default": "Activate Linux" },
     { "key": "message", "type": "text", "label": "Message", "icon": "notes", "default": "Go to Settings to activate Linux." },
     { "key": "color", "type": "text", "label": "Color (r-g-b-a, 0.0-1.0)", "icon": "palette", "default": "0.35-0.35-0.35-1" },
