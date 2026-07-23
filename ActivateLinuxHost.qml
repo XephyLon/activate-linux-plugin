@@ -25,6 +25,11 @@ Item {
     readonly property string color: PluginState.option(pluginId, "color", "0.35-0.35-0.35-1")
     readonly property bool bold: PluginState.option(pluginId, "bold", false)
     readonly property real scale: PluginState.option(pluginId, "scale", 1)
+    // Explicit font: the binary defaults to the generic "sans" alias, which on
+    // systems with Arabic (or other non-Latin) fonts installed can resolve to a
+    // face with no Latin glyphs -> the whole watermark renders as tofu boxes.
+    // Naming a real Latin family sidesteps the broken generic mapping.
+    readonly property string font: PluginState.option(pluginId, "font", "Rubik")
 
     // The argv the process is currently running with, as a JSON string, or ""
     // when it should be stopped. Comparing against the desired value keeps a
@@ -48,6 +53,7 @@ Item {
             "-t", root.title,
             "-m", root.message,
             "-c", root.color,
+            "-f", root.font,
             "-s", String(root.scale)];
         if (root.bold)
             args.push("-b");
@@ -89,6 +95,7 @@ Item {
     onTitleChanged: applyDebounce.restart()
     onMessageChanged: applyDebounce.restart()
     onColorChanged: applyDebounce.restart()
+    onFontChanged: applyDebounce.restart()
     onBoldChanged: applyDebounce.restart()
     onScaleChanged: applyDebounce.restart()
 
