@@ -92,7 +92,17 @@ Item {
     onBoldChanged: applyDebounce.restart()
     onScaleChanged: applyDebounce.restart()
 
-    Component.onCompleted: applyDebounce.restart()
+    // Reap any orphaned watermark(s) before launching ours. A hard shell kill
+    // (e.g. `killall qs`) skips Component.onDestruction, so the foreground child
+    // survives and reparents to init; the next shell start then spawns another,
+    // and they pile up. Reaping strays first guarantees at most one instance,
+    // however the previous shell died. (apply() runs when the reap finishes.)
+    Component.onCompleted: strayReaper.running = true
+    Process {
+        id: strayReaper
+        command: ["pkill", "-x", "activate-linux"]
+        onExited: applyDebounce.restart()
+    }
     // Plugin disabled or shell reloading: kill the child rather than orphan it.
     Component.onDestruction: {
         root.intentionalStop = true;
