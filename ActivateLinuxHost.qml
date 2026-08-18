@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell.Io
 import qs.modules.common.plugins
+import qs.services
 
 // Invisible desktop-widget host. A settings-only plugin persists options but
 // runs no QML, so there is nothing to launch the watermark. The desktop entry
@@ -20,6 +21,32 @@ Item {
     readonly property string pluginId: "activate_linux"
 
     readonly property bool watermarkEnabled: PluginState.option(pluginId, "enabled", false)
+
+    // The watermark stands down while any monitor has a fullscreen window.
+    //
+    // activate-linux maps its surface on the wlr-layer-shell OVERLAY layer with
+    // no option to go lower, and a mapped Overlay surface - any size, 340x120
+    // here - is one of the things that stops Hyprland handing a fullscreen
+    // window the output outright (`solitaryBlockedBy: other overlays`). With
+    // that fast path blocked the compositor composites every frame; with it
+    // open it does nothing at all. Measured against a fullscreen game's own
+    // counter on the maintainer's machine: this one process was worth ~8 fps
+    // and the last of the compositor's GPU time.
+    //
+    // Nobody can see a watermark under an opaque fullscreen window anyway, so
+    // stopping it there costs nothing visible. Any monitor rather than the
+    // watermark's own, because the binary picks its output itself and this
+    // host is not told which; the price of that is a watermark that hides on
+    // a second screen while a game runs on the first, which is the cheaper
+    // wrong answer.
+    //
+    // Read off HyprlandData's `hasfullscreen`, the same fact the bar and the
+    // dock gate on, rather than walking `Hyprland.workspaces[..].toplevels` in
+    // a binding: the nested `.values` reads do not re-evaluate when a
+    // workspace changes underneath them, and the first cut of this stayed
+    // stuck at true after the game's workspace stopped being active.
+    readonly property bool fullscreenSomewhere: HyprlandData.monitors.some(m =>
+        HyprlandData.workspaceById[m?.activeWorkspace?.id]?.hasfullscreen ?? false)
     readonly property string title: PluginState.option(pluginId, "title", "Activate Linux")
     readonly property string message: PluginState.option(pluginId, "message", "Go to Settings to activate Linux.")
     readonly property string color: PluginState.option(pluginId, "color", "0.35-0.35-0.35-1")
@@ -44,7 +71,7 @@ Item {
     property bool intentionalStop: false
 
     function desiredCommand() {
-        if (!root.watermarkEnabled)
+        if (!root.watermarkEnabled || root.fullscreenSomewhere)
             return null;
         // Foreground (no -d): Quickshell owns the child, so toggling off or
         // unloading the plugin tears the watermark down with it. -q silences
@@ -92,6 +119,7 @@ Item {
     // as PluginState settles at startup collapses into a single launch instead
     // of a launch-kill-launch thrash.
     onWatermarkEnabledChanged: applyDebounce.restart()
+    onFullscreenSomewhereChanged: applyDebounce.restart()
     onTitleChanged: applyDebounce.restart()
     onMessageChanged: applyDebounce.restart()
     onColorChanged: applyDebounce.restart()
